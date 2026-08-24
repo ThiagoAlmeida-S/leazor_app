@@ -39,6 +39,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="map" size={24} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="historico"
+        options={{
+          title: 'Histórico',
+          tabBarIcon: ({ color }) => <Ionicons name="time" size={24} color={color} />,
+        }}
+      />
     </Tabs>
   );
 }

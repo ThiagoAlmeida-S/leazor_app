@@ -2,6 +2,11 @@ import { View, Text, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
 import StatusDispositivo from '../components/StatusDispositivo';
 import SensorCard from '../components/SensorCard';
 import { colors, typography, spacing } from '../theme/theme';
+import { ENDPOINTS } from '../services/api';
+
+// Para buscar os sensores:
+const resposta = await fetch(ENDPOINTS.TELEMETRIA);
+const dados = await resposta.json();
 
 // Nenhum dado real conectado ainda de propósito. Quando o endpoint
 // GET /api/telemetria estiver pronto, isso vira useState + useEffect.

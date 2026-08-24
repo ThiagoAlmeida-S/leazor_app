@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import StatusDispositivo from '../components/StatusDispositivo';
 import { colors, typography, spacing } from '../theme/theme';
 
 // O mapa de verdade (react-native-maps) entra numa próxima iteração,
@@ -10,6 +11,8 @@ export default function LocalizacaoScreen() {
       <View style={styles.container}>
         <Text style={typography.title}>Localização</Text>
         <Text style={styles.subtitle}>Posição do robô via GPS</Text>
+        <Text style={typography.title}>Operação Manual</Text>
+        <StatusDispositivo status={cortando ? 'EXECUTANDO_FUNCAO' : 'PARADO'} />
 
         <View style={styles.mapPlaceholder}>
           <Ionicons name="map-outline" size={32} color={colors.textDisabled} />

@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Joystick from '../components/Joystick';
+import StatusDispositivo from '../components/StatusDispositivo';
 import { colors, typography, spacing } from '../theme/theme';
+import { ENDPOINTS } from '../services/api';
+
+// No envio do Joystick:
+await fetch(ENDPOINTS.COMANDO, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ motorEsquerdo: velEsq, motorDireito: velDir }),
+});
 
 export default function ControleScreen() {
   const [cortando, setCortando] = useState(false);
@@ -50,6 +59,8 @@ export default function ControleScreen() {
             <Text style={styles.statusText}>
               {cortando ? 'LÂMINAS ATIVAS' : 'EM ESPERA'}
             </Text>
+            <Text style={typography.title}>Operação Manual</Text>
+            <StatusDispositivo status={cortando ? 'EXECUTANDO_FUNCAO' : 'PARADO'} />
           </View>
         </View>
 
