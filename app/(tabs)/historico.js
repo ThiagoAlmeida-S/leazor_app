@@ -12,16 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import StatusDispositivo from '../../src/components/StatusDispositivo';
 import { colors, typography, spacing } from '../../src/theme/theme';
 
-// Interface para remover os avisos de tipo do TypeScript
-interface ItemHistorico {
-  id: string;
-  tipo: 'ALERTA' | 'CORTE';
-  titulo: string;
-  detalhe: string;
-  data: string;
-}
-
-const HISTORICO_INICIAL: ItemHistorico[] = [
+const HISTORICO_INICIAL = [
   { id: '1', tipo: 'ALERTA', titulo: 'Superaquecimento no motor', detalhe: 'Km 142 - Via Norte', data: '10:42' },
   { id: '2', tipo: 'CORTE', titulo: 'Trecho concluído (450m)', detalhe: 'Km 141 ao 141.5', data: '10:15' },
   { id: '3', tipo: 'ALERTA', titulo: 'Obstrução detectada nas lâminas', detalhe: 'Km 140', data: '09:30' },
@@ -29,9 +20,9 @@ const HISTORICO_INICIAL: ItemHistorico[] = [
 ];
 
 export default function TabHistorico() {
-  const [historico, setHistorico] = useState<ItemHistorico[]>(HISTORICO_INICIAL);
+  const [historico, setHistorico] = useState(HISTORICO_INICIAL);
 
-  const removerItem = (id: string) => {
+  const removerItem = (id) => {
     setHistorico((prev) => prev.filter((item) => item.id !== id));
   };
 

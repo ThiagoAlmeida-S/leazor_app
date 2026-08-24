@@ -1,16 +1,28 @@
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
 import StatusDispositivo from '../components/StatusDispositivo';
 import SensorCard from '../components/SensorCard';
 import { colors, typography, spacing } from '../theme/theme';
 import { ENDPOINTS } from '../services/api';
 
-// Para buscar os sensores:
-const resposta = await fetch(ENDPOINTS.TELEMETRIA);
-const dados = await resposta.json();
-
-// Nenhum dado real conectado ainda de propósito. Quando o endpoint
-// GET /api/telemetria estiver pronto, isso vira useState + useEffect.
 export default function DashboardScreen() {
+  // Hooks devem sempre ficar dentro da função do componente
+  const [dadosSensores, setDadosSensores] = useState(null);
+
+  useEffect(() => {
+    const buscarTelemetria = async () => {
+      try {
+        const resposta = await fetch(ENDPOINTS.TELEMETRIA);
+        const dados = await resposta.json();
+        setDadosSensores(dados);
+      } catch (error) {
+        console.log("Aguardando backend Spring Boot ligar...");
+      }
+    };
+
+    buscarTelemetria();
+  }, []);
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -19,13 +31,22 @@ export default function DashboardScreen() {
 
         <Text style={styles.sectionLabel}>Bateria</Text>
         <View style={styles.batteryCard}>
-          <Text style={typography.value}>—</Text>
-          <Text style={typography.label}>Aguardando leitura</Text>
+          <Text style={typography.value}>
+            {dadosSensores ? `${dadosSensores.bateria}%` : '—'}
+          </Text>
+          <Text style={typography.label}>
+            {dadosSensores ? 'Leitura atualizada' : 'Aguardando leitura'}
+          </Text>
         </View>
 
         <Text style={styles.sectionLabel}>Sensores</Text>
         <View style={styles.grid}>
-          <SensorCard icon="pulse-outline" label="Distância (ultrassônico)" value={null} unit="cm" />
+          <SensorCard 
+            icon="pulse-outline" 
+            label="Distância (ultrassônico)" 
+            value={dadosSensores ? dadosSensores.distancia : null} 
+            unit="cm" 
+          />
           <SensorCard
             icon="thermometer-outline"
             label="Temperatura"

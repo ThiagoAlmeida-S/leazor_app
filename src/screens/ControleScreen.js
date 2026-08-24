@@ -6,32 +6,35 @@ import StatusDispositivo from '../components/StatusDispositivo';
 import { colors, typography, spacing } from '../theme/theme';
 import { ENDPOINTS } from '../services/api';
 
-// No envio do Joystick:
-await fetch(ENDPOINTS.COMANDO, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ motorEsquerdo: velEsq, motorDireito: velDir }),
-});
-
 export default function ControleScreen() {
   const [cortando, setCortando] = useState(false);
   const [coordenadas, setCoordenadas] = useState({ x: 0, y: 0 });
   const [motores, setMotores] = useState({ esq: 0, dir: 0 });
+
+  // Função assíncrona movida para DENTRO do componente
+  const enviarComandoHTTP = async (velEsq, velDir) => {
+    try {
+      await fetch(ENDPOINTS.COMANDO, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motorEsquerdo: velEsq, motorDireito: velDir }),
+      });
+    } catch (error) {
+      console.log('Aguardando backend...');
+    }
+  };
 
   // Algoritmo de Arcade Drive (Tração Diferencial)
   const calcularMotores = (x, y) => {
     let velEsq = y + x;
     let velDir = y - x;
 
-    // Se o valor passar de 1.0 ou -1.0, dividimos ambos pelo maior valor
-    // para manter a proporção da curva sem estourar o limite do motor
     const max = Math.max(Math.abs(velEsq), Math.abs(velDir));
     if (max > 1.0) {
       velEsq /= max;
       velDir /= max;
     }
 
-    // Retorna em formato de porcentagem (-100 a 100)
     return {
       esq: Math.round(velEsq * 100),
       dir: Math.round(velDir * 100)
@@ -44,7 +47,8 @@ export default function ControleScreen() {
     const velocidades = calcularMotores(data.x, data.y);
     setMotores(velocidades);
 
-    // Aqui no futuro chamaremos o endpoint HTTP com o objeto 'velocidades'
+    // Dispara a chamada para a API com as velocidades calculadas
+    enviarComandoHTTP(velocidades.esq, velocidades.dir);
   };
 
   return (
@@ -59,7 +63,6 @@ export default function ControleScreen() {
             <Text style={styles.statusText}>
               {cortando ? 'LÂMINAS ATIVAS' : 'EM ESPERA'}
             </Text>
-            <Text style={typography.title}>Operação Manual</Text>
             <StatusDispositivo status={cortando ? 'EXECUTANDO_FUNCAO' : 'PARADO'} />
           </View>
         </View>
@@ -123,7 +126,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
   statusBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceAlt, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   dot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
-  statusText: { ...typography.label, fontSize: 11, color: colors.textPrimary },
+  statusText: { ...typography.label, fontSize: 11, color: colors.textPrimary, marginRight: 8 },
   cameraContainer: {
     flex: 1,
     backgroundColor: '#000',
@@ -157,7 +160,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  btnText: { ...typography.eyebrow, color: colors.textPrimary, marginTop: 4, fontSize: 10 },
+  btnText: { ...typography.eyebrow, color: colors.textPrimary, marginTop: 4, fontSize: 10, textAlign: 'center' },
   joystickWrapper: { alignItems: 'center', justifyContent: 'center' },
-  joystickLabel: { ...typography.label, marginTop: spacing.xs, fontSize: 11 },
 });
