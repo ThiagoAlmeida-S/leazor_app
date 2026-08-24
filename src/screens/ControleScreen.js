@@ -7,10 +7,35 @@ import { colors, typography, spacing } from '../theme/theme';
 export default function ControleScreen() {
   const [cortando, setCortando] = useState(false);
   const [coordenadas, setCoordenadas] = useState({ x: 0, y: 0 });
+  const [motores, setMotores] = useState({ esq: 0, dir: 0 });
+
+  // Algoritmo de Arcade Drive (Tração Diferencial)
+  const calcularMotores = (x, y) => {
+    let velEsq = y + x;
+    let velDir = y - x;
+
+    // Se o valor passar de 1.0 ou -1.0, dividimos ambos pelo maior valor
+    // para manter a proporção da curva sem estourar o limite do motor
+    const max = Math.max(Math.abs(velEsq), Math.abs(velDir));
+    if (max > 1.0) {
+      velEsq /= max;
+      velDir /= max;
+    }
+
+    // Retorna em formato de porcentagem (-100 a 100)
+    return {
+      esq: Math.round(velEsq * 100),
+      dir: Math.round(velDir * 100)
+    };
+  };
 
   const handleJoystickMove = (data) => {
     setCoordenadas(data);
-    // Aqui no futuro chamaremos a função de envio HTTP
+    
+    const velocidades = calcularMotores(data.x, data.y);
+    setMotores(velocidades);
+
+    // Aqui no futuro chamaremos o endpoint HTTP com o objeto 'velocidades'
   };
 
   return (
@@ -60,9 +85,19 @@ export default function ControleScreen() {
           {/* JOYSTICK INTERATIVO */}
           <View style={styles.joystickWrapper}>
             <Joystick size={180} knobSize={70} onMove={handleJoystickMove} />
-            <Text style={styles.joystickLabel}>
-              X: {coordenadas.x.toFixed(2)} | Y: {coordenadas.y.toFixed(2)}
-            </Text>
+            
+            {/* Monitor de Debug dos Motores */}
+            <View style={{ marginTop: spacing.md, alignItems: 'center' }}>
+              <Text style={{ ...typography.label, fontSize: 11 }}>COORDENADAS BRUTAS</Text>
+              <Text style={{ ...typography.body, fontSize: 12, marginBottom: 8 }}>
+                X: {coordenadas.x.toFixed(2)} | Y: {coordenadas.y.toFixed(2)}
+              </Text>
+              
+              <Text style={{ ...typography.label, fontSize: 11, color: colors.safety }}>VELOCIDADE ESTEIRAS</Text>
+              <Text style={{ ...typography.body, fontSize: 13, color: colors.safety, fontWeight: 'bold' }}>
+                Esq: {motores.esq}% | Dir: {motores.dir}%
+              </Text>
+            </View>
           </View>
 
         </View>
