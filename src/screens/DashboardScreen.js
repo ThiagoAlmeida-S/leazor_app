@@ -6,21 +6,24 @@ import { colors, typography, spacing } from '../theme/theme';
 import { ENDPOINTS } from '../services/api';
 
 export default function DashboardScreen() {
-  // Hooks devem sempre ficar dentro da função do componente
   const [dadosSensores, setDadosSensores] = useState(null);
 
   useEffect(() => {
     const buscarTelemetria = async () => {
       try {
         const resposta = await fetch(ENDPOINTS.TELEMETRIA);
-        const dados = await resposta.json();
-        setDadosSensores(dados);
+        if (resposta.ok) {
+          const dados = await resposta.json();
+          setDadosSensores(dados);
+        }
       } catch (error) {
         console.log("Aguardando backend Spring Boot ligar...");
       }
     };
 
     buscarTelemetria();
+    const intervalo = setInterval(buscarTelemetria, 1000);
+    return () => clearInterval(intervalo);
   }, []);
 
   return (
@@ -32,26 +35,38 @@ export default function DashboardScreen() {
         <Text style={styles.sectionLabel}>Bateria</Text>
         <View style={styles.batteryCard}>
           <Text style={typography.value}>
-            {dadosSensores ? `${dadosSensores.bateria}%` : '—'}
+            {dadosSensores?.bateria != null ? `${dadosSensores.bateria}%` : '—'}
           </Text>
           <Text style={typography.label}>
             {dadosSensores ? 'Leitura atualizada' : 'Aguardando leitura'}
           </Text>
         </View>
 
-        <Text style={styles.sectionLabel}>Sensores</Text>
+        <Text style={styles.sectionLabel}>Telemetria e Orientação</Text>
         <View style={styles.grid}>
           <SensorCard 
             icon="pulse-outline" 
-            label="Distância (ultrassônico)" 
-            value={dadosSensores ? dadosSensores.distancia : null} 
+            label="Distância" 
+            value={dadosSensores?.distancia ?? null} 
             unit="cm" 
+          />
+          <SensorCard 
+            icon="compass-outline" 
+            label="Inclinação" 
+            value={dadosSensores?.inclinacao ?? null} 
+            unit="°" 
           />
           <SensorCard
             icon="thermometer-outline"
             label="Temperatura"
-            disabled
-            disabledText="Sensor a instalar"
+            value={dadosSensores?.temperatura ?? null}
+            unit="°C"
+          />
+          <SensorCard
+            icon="water-outline"
+            label="Umidade"
+            value={dadosSensores?.umidade ?? null}
+            unit="%"
           />
         </View>
       </ScrollView>

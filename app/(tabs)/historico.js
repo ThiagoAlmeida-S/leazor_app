@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,30 +7,60 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import StatusDispositivo from '../../src/components/StatusDispositivo';
 import { colors, typography, spacing } from '../../src/theme/theme';
-
-const HISTORICO_INICIAL = [
-  { id: '1', tipo: 'ALERTA', titulo: 'Superaquecimento no motor', detalhe: 'Km 142 - Via Norte', data: '10:42' },
-  { id: '2', tipo: 'CORTE', titulo: 'Trecho concluído (450m)', detalhe: 'Km 141 ao 141.5', data: '10:15' },
-  { id: '3', tipo: 'ALERTA', titulo: 'Obstrução detectada nas lâminas', detalhe: 'Km 140', data: '09:30' },
-  { id: '4', tipo: 'CORTE', titulo: 'Trecho concluído (1.2km)', detalhe: 'Km 138.8 ao 140', data: '08:50' },
-];
+import { ENDPOINTS } from '../../src/services/api';
 
 export default function TabHistorico() {
-  const [historico, setHistorico] = useState(HISTORICO_INICIAL);
+  const [historico, setHistorico] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const carregarHistorico = async () => {
+    try {
+      const resposta = await fetch(ENDPOINTS.HISTORICO);
+      if (resposta.ok) {
+        const dados = await resposta.json();
+        setHistorico(dados);
+      }
+    } catch (error) {
+      console.log('Aguardando backend Spring Boot para carregar histórico...');
+    } finally {
+      setCarregando(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    carregarHistorico();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    carregarHistorico();
+  };
 
   const removerItem = (id) => {
     setHistorico((prev) => prev.filter((item) => item.id !== id));
   };
 
   const limparTudo = () => {
-    Alert.alert('Limpar Histórico', 'Deseja apagar todos os registros de operação?', [
+    Alert.alert('Limpar Histórico', 'Deseja apagar os registros da tela?', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Limpar', style: 'destructive', onPress: () => setHistorico([]) },
     ]);
+  };
+
+  const formatarHora = (dataIso) => {
+    if (!dataIso) return '--:--';
+    const data = new Date(dataIso);
+    return isNaN(data.getTime())
+      ? dataIso
+      : data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -48,33 +78,51 @@ export default function TabHistorico() {
           )}
         </View>
 
-        <ScrollView contentContainerStyle={styles.lista}>
-          {historico.length === 0 ? (
-            <View style={styles.vazioContainer}>
-              <Ionicons name="archive-outline" size={48} color={colors.textDisabled} />
-              <Text style={styles.vazioText}>Nenhum registro no histórico</Text>
-            </View>
-          ) : (
-            historico.map((item) => (
-              <View key={item.id} style={styles.card}>
-                <Ionicons
-                  name={item.tipo === 'ALERTA' ? 'warning-outline' : 'checkmark-circle-outline'}
-                  size={24}
-                  color={item.tipo === 'ALERTA' ? colors.danger : colors.grass}
-                  style={styles.icon}
-                />
-                <View style={styles.info}>
-                  <Text style={styles.cardTitulo}>{item.titulo}</Text>
-                  <Text style={styles.cardDetalhe}>{item.detalhe}</Text>
-                </View>
-                <Text style={styles.cardData}>{item.data}</Text>
-                <TouchableOpacity onPress={() => removerItem(item.id)} style={styles.btnDeletar}>
-                  <Ionicons name="close-circle-outline" size={20} color={colors.textDisabled} />
-                </TouchableOpacity>
+        {carregando ? (
+          <View style={styles.vazioContainer}>
+            <ActivityIndicator size="large" color={colors.grass} />
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.lista}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.grass} />
+            }
+          >
+            {historico.length === 0 ? (
+              <View style={styles.vazioContainer}>
+                <Ionicons name="archive-outline" size={48} color={colors.textDisabled} />
+                <Text style={styles.vazioText}>Nenhum registro no histórico</Text>
               </View>
-            ))
-          )}
-        </ScrollView>
+            ) : (
+              historico.map((item, index) => {
+                const isAlerta = item.tipo === 'ALERTA' || item.tipoAlert === 'CRITICO';
+                const titulo = item.titulo || item.descricao || item.mensagem || 'Evento de operação';
+                const detalhe = item.detalhe || (item.sensor ? `Sensor: ${item.sensor.nome}` : 'Registro do sistema');
+                const hora = item.data ? item.data : formatarHora(item.dataHora);
+
+                return (
+                  <View key={item.id ? item.id.toString() : index.toString()} style={styles.card}>
+                    <Ionicons
+                      name={isAlerta ? 'warning-outline' : 'checkmark-circle-outline'}
+                      size={24}
+                      color={isAlerta ? colors.danger : colors.grass}
+                      style={styles.icon}
+                    />
+                    <View style={styles.info}>
+                      <Text style={styles.cardTitulo}>{titulo}</Text>
+                      <Text style={styles.cardDetalhe}>{detalhe}</Text>
+                    </View>
+                    <Text style={styles.cardData}>{hora}</Text>
+                    <TouchableOpacity onPress={() => removerItem(item.id)} style={styles.btnDeletar}>
+                      <Ionicons name="close-circle-outline" size={20} color={colors.textDisabled} />
+                    </TouchableOpacity>
+                  </View>
+                );
+              })
+            )}
+          </ScrollView>
+        )}
       </View>
     </SafeAreaView>
   );

@@ -3,10 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/theme';
+import { API_BASE_URL } from '../../src/services/api';
 
 // O IP do seu computador onde o Spring Boot vai rodar
-const API_BASE_URL = 'http://localhost:8080';
-
 export default function TabLayout() {
   const [isConectado, setIsConectado] = useState(false);
   const [isVerificando, setIsVerificando] = useState(true);
