@@ -14,7 +14,7 @@ export default function LoginScreen({ onLoginSucesso }) {
     const uLimpo = usuario.trim().toLowerCase();
     const sLimpa = senha.trim();
 
-    if (uLimpo === 'Leazor' && sLimpa === 'Leazor2026') {
+    if (uLimpo === 'admin' && sLimpa === '1234') {
       onLoginSucesso();
     } else {
       const msg = 'Usuário ou senha incorretos.';

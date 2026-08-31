@@ -5,7 +5,7 @@ const WEB_API_URL = 'http://localhost:8080';
 
 // IP do computador onde o Spring Boot está rodando
 // O celular precisa estar conectado à mesma rede Wi-Fi do computador.
-const MOBILE_API_URL = 'http://192.168.0.17:8080';
+const MOBILE_API_URL = 'http://192.168.0.44:8080';
 
 // No navegador usa localhost; no celular usa o IP do computador.
 export const API_BASE_URL =
