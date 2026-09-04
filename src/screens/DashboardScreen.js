@@ -4,30 +4,45 @@ import { Ionicons } from '@expo/vector-icons';
 import StatusDispositivo from '../components/StatusDispositivo';
 import SensorCard from '../components/SensorCard';
 import { colors, typography, spacing } from '../theme/theme';
-import { ENDPOINTS } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+
+// Endereço do Raspberry Pi para leitura de sensores
+const RASPBERRY_IP = '172.20.10.4';
+const TELEMETRIA_URL = `http://${RASPBERRY_IP}:5000/telemetria`;
 
 export default function DashboardScreen() {
   const [dadosSensores, setDadosSensores] = useState(null);
+  const [conectado, setConectado] = useState(false);
   const [modalVisivel, setModalVisivel] = useState(false);
   const { logout } = useAuth();
 
   useEffect(() => {
+    let montado = true;
+
     const buscarTelemetria = async () => {
       try {
-        const resposta = await fetch(ENDPOINTS.TELEMETRIA);
+        const resposta = await fetch(TELEMETRIA_URL);
         if (resposta.ok) {
           const dados = await resposta.json();
-          setDadosSensores(dados);
+          if (montado) {
+            setDadosSensores(dados);
+            setConectado(true);
+          }
+        } else {
+          if (montado) setConectado(false);
         }
       } catch (error) {
-        console.log("Aguardando backend Spring Boot ligar...");
+        if (montado) setConectado(false);
       }
     };
 
     buscarTelemetria();
     const intervalo = setInterval(buscarTelemetria, 1000);
-    return () => clearInterval(intervalo);
+
+    return () => {
+      montado = false;
+      clearInterval(intervalo);
+    };
   }, []);
 
   const confirmLogout = () => {
@@ -35,10 +50,16 @@ export default function DashboardScreen() {
     logout();
   };
 
+  // Formatação segura para exibir apenas o valor bruto captado pelo sensor
+  const formatarValor = (valor) => {
+    if (valor === null || valor === undefined) return '—';
+    return typeof valor === 'number' ? valor.toString() : valor;
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* CABEÇALHO COM BOTÃO DE LOGOUT */}
+        {/* CABEÇALHO */}
         <View style={styles.headerContainer}>
           <View>
             <Text style={typography.title}>Leazor</Text>
@@ -54,47 +75,49 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        <StatusDispositivo status="PARADO" />
+        <StatusDispositivo status={conectado ? 'EXECUTANDO_FUNCAO' : 'PARADO'} />
 
+        {/* BATERIA */}
         <Text style={styles.sectionLabel}>Bateria</Text>
         <View style={styles.batteryCard}>
           <Text style={typography.value}>
             {dadosSensores?.bateria != null ? `${dadosSensores.bateria}%` : '—'}
           </Text>
           <Text style={typography.label}>
-            {dadosSensores ? 'Leitura atualizada' : 'Aguardando leitura'}
+            {conectado ? 'Leitura em tempo real' : 'Aguardando conexão com Raspberry Pi'}
           </Text>
         </View>
 
+        {/* TELEMETRIA DOS SENSORES */}
         <Text style={styles.sectionLabel}>Telemetria e Orientação</Text>
         <View style={styles.grid}>
           <SensorCard 
             icon="pulse-outline" 
             label="Distância" 
-            value={dadosSensores?.distancia ?? null} 
+            value={formatarValor(dadosSensores?.distancia)} 
             unit="cm" 
           />
           <SensorCard 
             icon="compass-outline" 
             label="Inclinação" 
-            value={dadosSensores?.inclinacao ?? null} 
+            value={formatarValor(dadosSensores?.inclinacao)} 
             unit="°" 
           />
           <SensorCard
             icon="thermometer-outline"
             label="Temperatura"
-            value={dadosSensores?.temperatura ?? null}
+            value={formatarValor(dadosSensores?.temperatura)}
             unit="°C"
           />
           <SensorCard
             icon="water-outline"
             label="Umidade"
-            value={dadosSensores?.umidade ?? null}
+            value={formatarValor(dadosSensores?.umidade)}
             unit="%"
           />
         </View>
 
-        {/* MODAL DE CONFIRMAÇÃO DE LOGOUT */}
+        {/* MODAL DE LOGOUT */}
         <Modal
           visible={modalVisivel}
           transparent={true}
@@ -170,7 +193,6 @@ const styles = StyleSheet.create({
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
 
-  // Estilos do Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
