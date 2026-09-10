@@ -1,31 +1,28 @@
 import { Platform } from 'react-native';
 
-// URL usada quando o aplicativo roda no navegador do mesmo computador
 const WEB_API_URL = 'http://localhost:8080';
+const MOBILE_API_URL = 'http://172.20.10.2:8080';
 
-// IP do computador onde o Spring Boot está rodando
-// O celular precisa estar conectado à mesma rede Wi-Fi do computador.
-const MOBILE_API_URL = 'http://172.20.10.4:8080';
+export const API_BASE_URL = Platform.OS === 'web' ? WEB_API_URL : MOBILE_API_URL;
 
-// No navegador usa localhost; no celular usa o IP do computador.
-export const API_BASE_URL =
-  Platform.OS === 'web'
-    ? WEB_API_URL
-    : MOBILE_API_URL;
+export const RASPBERRY_IP = '172.20.10.4'; // ip que está conectado o RPI
+export const RASPBERRY_URL = `http://${RASPBERRY_IP}:5000`;
 
-export async function getTelemetria() {
+export const ENDPOINTS = {
+  HISTORICO: `${API_BASE_URL}/api/historico`,
+  EMERGENCIA: `${API_BASE_URL}/api/emergencia`,
+  
+  COMANDO_RT: `${RASPBERRY_URL}/comando`,
+  TELEMETRIA_RT: `${RASPBERRY_URL}/telemetria`,
+  GPS_RT: `${RASPBERRY_URL}/gps`,
+};
+
+export async function getTelemetriaHistorico() {
   const response = await fetch(`${API_BASE_URL}/api/telemetria`);
 
   if (!response.ok) {
-    throw new Error('Falha ao buscar telemetria');
+    throw new Error('Falha ao buscar histórico de telemetria');
   }
 
   return response.json();
 }
-
-export const ENDPOINTS = {
-  COMANDO: `${API_BASE_URL}/api/comando`,
-  TELEMETRIA: `${API_BASE_URL}/api/telemetria`,
-  HISTORICO: `${API_BASE_URL}/api/historico`,
-  EMERGENCIA: `${API_BASE_URL}/api/emergencia`,
-};

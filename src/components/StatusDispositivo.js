@@ -1,14 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme/theme';
 
-// Mapeia o status real do dispositivo pra cor, usando a mesma lógica
-// de equipamento de rodovia: cinza = parado, âmbar = em movimento,
-// verde = executando a função (cortando), vermelho = alerta.
 const STATUS_CONFIG = {
   PARADO: { label: 'Parado', color: colors.textSecondary },
   EM_MOVIMENTO: { label: 'Em movimento', color: colors.safety },
   EXECUTANDO_FUNCAO: { label: 'Cortando grama', color: colors.grass },
   ALERTA: { label: 'Alerta', color: colors.danger },
+  DESCONECTADO: { label: 'Sem Sinal (RPi)', color: '#FF9800' },
 };
 
 export default function StatusDispositivo({ status = 'PARADO' }) {
