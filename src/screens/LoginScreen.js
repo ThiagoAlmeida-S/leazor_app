@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Alert,
+  Platform,
+  Image,
+} from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing } from '../theme/theme';
 
@@ -19,6 +30,7 @@ export default function LoginScreen({ onLoginSucesso }) {
     } else {
       const msg = 'Usuário ou senha incorretos.';
       setMensagemErro(msg);
+
       if (Platform.OS !== 'web') {
         Alert.alert('Acesso Negado', msg);
       }
@@ -28,19 +40,41 @@ export default function LoginScreen({ onLoginSucesso }) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Ionicons name="shield-checkmark-outline" size={64} color={colors.grass} style={styles.icon} />
-        <Text style={typography.title}>Leazor Access</Text>
-        <Text style={styles.subtitle}>Digite as credenciais da equipe</Text>
+
+        {/* LOGO DA EQUIPE */}
+        <Image
+          source={require('../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
+
+        <Text style={styles.subtitle}>
+          Digite as credenciais da equipe
+        </Text>
 
         {mensagemErro !== '' && (
           <View style={styles.errorCard}>
-            <Ionicons name="alert-circle-outline" size={18} color={colors.danger} />
-            <Text style={styles.errorText}>{mensagemErro}</Text>
+            <Ionicons
+              name="alert-circle-outline"
+              size={18}
+              color={colors.danger}
+            />
+
+            <Text style={styles.errorText}>
+              {mensagemErro}
+            </Text>
           </View>
         )}
 
         <View style={styles.inputContainer}>
-          <Ionicons name="person-outline" size={20} color={colors.textDisabled} style={styles.inputIcon} />
+          <Ionicons
+            name="person-outline"
+            size={20}
+            color={colors.textDisabled}
+            style={styles.inputIcon}
+          />
+
           <TextInput
             style={styles.input}
             placeholder="Usuário"
@@ -52,7 +86,13 @@ export default function LoginScreen({ onLoginSucesso }) {
         </View>
 
         <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={20} color={colors.textDisabled} style={styles.inputIcon} />
+          <Ionicons
+            name="lock-closed-outline"
+            size={20}
+            color={colors.textDisabled}
+            style={styles.inputIcon}
+          />
+
           <TextInput
             style={styles.input}
             placeholder="Senha"
@@ -63,19 +103,46 @@ export default function LoginScreen({ onLoginSucesso }) {
           />
         </View>
 
-        <TouchableOpacity style={styles.btnEntrar} onPress={handleEntrar} activeOpacity={0.8}>
-          <Text style={styles.btnText}>ENTRAR</Text>
+        <TouchableOpacity
+          style={styles.btnEntrar}
+          onPress={handleEntrar}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.btnText}>
+            ENTRAR
+          </Text>
         </TouchableOpacity>
+
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  container: { flex: 1, padding: spacing.lg, justifyContent: 'center', alignItems: 'center' },
-  icon: { marginBottom: spacing.md },
-  subtitle: { ...typography.label, marginBottom: spacing.xl },
+  safe: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+
+  container: {
+    flex: 1,
+    padding: spacing.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // LOGO
+  logo: {
+    width: 140,
+    height: 140,
+    marginBottom: spacing.md,
+  },
+
+  subtitle: {
+    ...typography.label,
+    marginBottom: spacing.xl,
+  },
+
   errorCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -86,7 +153,13 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 8,
   },
-  errorText: { color: colors.danger, fontSize: 13, fontWeight: '600' },
+
+  errorText: {
+    color: colors.danger,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -99,8 +172,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
   },
-  inputIcon: { marginRight: spacing.sm },
-  input: { flex: 1, color: colors.textPrimary, ...typography.body },
+
+  inputIcon: {
+    marginRight: spacing.sm,
+  },
+
+  input: {
+    flex: 1,
+    color: colors.textPrimary,
+    ...typography.body,
+  },
+
   btnEntrar: {
     backgroundColor: colors.grass,
     borderRadius: 12,
@@ -110,5 +192,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: spacing.sm,
   },
-  btnText: { ...typography.eyebrow, color: colors.background, fontWeight: 'bold' },
+
+  btnText: {
+    ...typography.eyebrow,
+    color: colors.background,
+    fontWeight: 'bold',
+  },
 });
