@@ -5,7 +5,7 @@ const MOBILE_API_URL = 'http://172.20.10.2:8080';
 
 export const API_BASE_URL = Platform.OS === 'web' ? WEB_API_URL : MOBILE_API_URL;
 
-export const RASPBERRY_IP = '172.20.10.4'; // ip que está conectado o RPI
+export const RASPBERRY_IP = '100.94.182.54'; // ip que está conectado o RPI 100.94.182.54
 export const RASPBERRY_URL = `http://${RASPBERRY_IP}:5000`;
 
 export const ENDPOINTS = {

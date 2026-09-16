@@ -15,6 +15,9 @@ import StatusDispositivo from '../../src/components/StatusDispositivo';
 import { colors, typography, spacing } from '../../src/theme/theme';
 import { ENDPOINTS } from '../../src/services/api';
 
+const RASPBERRY_IP = '100.94.182.54'; //127.0.1.1, 172.20.10.4, 192.168.15.18, 100.94.182.54
+const HISTORICO_URL = `http://${RASPBERRY_IP}:5000/historico`;
+
 export default function TabHistorico() {
   const [historico, setHistorico] = useState([]);
   const [carregando, setCarregando] = useState(true);

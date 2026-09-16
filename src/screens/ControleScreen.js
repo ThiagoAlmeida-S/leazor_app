@@ -7,7 +7,7 @@ import StatusDispositivo from '../components/StatusDispositivo';
 import { colors, typography, spacing } from '../theme/theme';
 
 // IP do Raspberry Pi na rede local
-const RASPBERRY_IP = '172.20.10.4';
+const RASPBERRY_IP = '100.94.182.54';    //127.0.1.1, 172.20.10.4, 192.168.15.18, 100.94.182.54
 const CAMERA_URL = `http://${RASPBERRY_IP}:5000/camera`;
 const COMANDO_URL = `http://${RASPBERRY_IP}:5000/comando`;
 

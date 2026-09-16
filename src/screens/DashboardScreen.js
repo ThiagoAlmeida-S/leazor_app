@@ -7,7 +7,7 @@ import { colors, typography, spacing } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
 
 // Endereço do Raspberry Pi para leitura de sensores
-const RASPBERRY_IP = '172.20.10.4';
+const RASPBERRY_IP = '100.94.182.54'; //127.0.1.1, 172.20.10.4, 192.168.15.18, 100.94.182.54
 const TELEMETRIA_URL = `http://${RASPBERRY_IP}:5000/telemetria`;
 
 export default function DashboardScreen() {
@@ -91,12 +91,12 @@ export default function DashboardScreen() {
         {/* TELEMETRIA DOS SENSORES */}
         <Text style={styles.sectionLabel}>Telemetria e Orientação</Text>
         <View style={styles.grid}>
-          <SensorCard 
-            icon="pulse-outline" 
-            label="Distância" 
-            value={formatarValor(dadosSensores?.distancia)} 
-            unit="cm" 
-          />
+        < SensorCard 
+          icon="pulse-outline" 
+          label="Distância"
+          value={formatarValor(dadosSensores?.ultrassom?.distancia_cm)} 
+          unit="cm"
+        />
           <SensorCard 
             icon="compass-outline" 
             label="Inclinação" 
@@ -104,11 +104,11 @@ export default function DashboardScreen() {
             unit="°" 
           />
           <SensorCard
-            icon="thermometer-outline"
-            label="Temperatura"
-            value={formatarValor(dadosSensores?.temperatura)}
-            unit="°C"
-          />
+           icon="thermometer-outline" 
+           label="Temperatura_cpu"
+           value={formatarValor(dadosSensores?.temperatura_cpu)}
+           unit="°C" 
+          /> 
           <SensorCard
             icon="water-outline"
             label="Umidade"
