@@ -5,13 +5,15 @@ const MOBILE_API_URL = 'http://172.20.10.2:8080';
 
 export const API_BASE_URL = Platform.OS === 'web' ? WEB_API_URL : MOBILE_API_URL;
 
-export const RASPBERRY_IP = '100.94.182.54'; // ip que está conectado o RPI 100.94.182.54
+export const RASPBERRY_IP = '100.94.182.54'; // IP fixado do RPi[cite: 5]
 export const RASPBERRY_URL = `http://${RASPBERRY_IP}:5000`;
 
 export const ENDPOINTS = {
   HISTORICO: `${API_BASE_URL}/api/historico`,
   EMERGENCIA: `${API_BASE_URL}/api/emergencia`,
   
+  // Endpoint ajustado para o stream da IA[cite: 5]
+  STREAM_IA: `${RASPBERRY_URL}/video_feed`,
   COMANDO_RT: `${RASPBERRY_URL}/comando`,
   TELEMETRIA_RT: `${RASPBERRY_URL}/telemetria`,
   GPS_RT: `${RASPBERRY_URL}/gps`,

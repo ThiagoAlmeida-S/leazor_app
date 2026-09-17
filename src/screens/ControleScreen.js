@@ -5,10 +5,10 @@ import { WebView } from 'react-native-webview';
 import Joystick from '../components/Joystick';
 import StatusDispositivo from '../components/StatusDispositivo';
 import { colors, typography, spacing } from '../theme/theme';
+import { RASPBERRY_IP } from '../services/api';
 
-// IP do Raspberry Pi na rede local
-const RASPBERRY_IP = '100.94.182.54';    //127.0.1.1, 172.20.10.4, 192.168.15.18, 100.94.182.54
-const CAMERA_URL = `http://${RASPBERRY_IP}:5000/camera`;
+// URL da Câmera IA atualizada para a rota de streaming MJPEG (/video_feed)
+const CAMERA_IA_URL = `http://${RASPBERRY_IP}:5000/video_feed`;
 const COMANDO_URL = `http://${RASPBERRY_IP}:5000/comando`;
 
 export default function ControleScreen() {
@@ -16,7 +16,6 @@ export default function ControleScreen() {
   const [coordenadas, setCoordenadas] = useState({ x: 0, y: 0 });
   const [motores, setMotores] = useState({ esq: 0, dir: 0 });
 
-  // Disparo dos comandos de movimentação para o Raspberry Pi
   const enviarComandoHTTP = async (velEsq, velDir) => {
     try {
       await fetch(COMANDO_URL, {
@@ -33,7 +32,6 @@ export default function ControleScreen() {
     }
   };
 
-  // Alterna acionamento do motor de corte
   const handleToggleCorte = async () => {
     const novoEstado = !cortando;
     setCortando(novoEstado);
@@ -52,7 +50,6 @@ export default function ControleScreen() {
     }
   };
 
-  // Interrupção imediata de emergência
   const handleEmergencia = async () => {
     setCortando(false);
     setMotores({ esq: 0, dir: 0 });
@@ -70,7 +67,6 @@ export default function ControleScreen() {
     }
   };
 
-  // Algoritmo de Arcade Drive (Tração Diferencial)
   const calcularMotores = (x, y) => {
     let velEsq = y + x;
     let velDir = y - x;
@@ -89,10 +85,8 @@ export default function ControleScreen() {
 
   const handleJoystickMove = (data) => {
     setCoordenadas(data);
-    
     const velocidades = calcularMotores(data.x, data.y);
     setMotores(velocidades);
-
     enviarComandoHTTP(velocidades.esq, velocidades.dir);
   };
 
@@ -108,7 +102,7 @@ export default function ControleScreen() {
         </style>
       </head>
       <body>
-        <img src="${CAMERA_URL}" />
+        <img src="${CAMERA_IA_URL}" />
       </body>
     </html>
   `;
@@ -116,8 +110,6 @@ export default function ControleScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        
-        {/* CABEÇALHO */}
         <View style={styles.header}>
           <Text style={typography.title}>Operação Manual</Text>
           <View style={styles.statusBadge}>
@@ -129,12 +121,12 @@ export default function ControleScreen() {
           </View>
         </View>
 
-        {/* FEED DA CÂMERA (WEB E MOBILE) */}
+        {/* FEED DE VÍDEO PROCESSADO COM YOLO */}
         <View style={styles.cameraContainer}>
           {Platform.OS === 'web' ? (
             <img 
-              src={CAMERA_URL} 
-              alt="Feed de Vídeo"
+              src={CAMERA_IA_URL} 
+              alt="Feed de Vídeo YOLO"
               style={{
                 width: '100%',
                 height: '100%',
@@ -152,16 +144,14 @@ export default function ControleScreen() {
               renderLoading={() => (
                 <View style={styles.cameraLoading}>
                   <ActivityIndicator size="large" color={colors.grass} />
-                  <Text style={styles.cameraText}>Conectando à Câmera...</Text>
+                  <Text style={styles.cameraText}>Conectando ao Stream IA...</Text>
                 </View>
               )}
             />
           )}
         </View>
 
-        {/* PAINEL INFERIOR */}
         <View style={styles.painelInferior}>
-          
           <View style={styles.actionButtons}>
             <TouchableOpacity 
               style={[styles.btnCorte, cortando && styles.btnCorteAtivo]} 
@@ -182,24 +172,19 @@ export default function ControleScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* JOYSTICK INTERATIVO */}
           <View style={styles.joystickWrapper}>
             <Joystick size={180} knobSize={70} onMove={handleJoystickMove} />
-            
-            {/* Monitor de Debug dos Motores */}
             <View style={{ marginTop: spacing.md, alignItems: 'center' }}>
               <Text style={{ ...typography.label, fontSize: 11 }}>COORDENADAS BRUTAS</Text>
               <Text style={{ ...typography.body, fontSize: 12, marginBottom: 8 }}>
                 X: {coordenadas.x.toFixed(2)} | Y: {coordenadas.y.toFixed(2)}
               </Text>
-              
               <Text style={{ ...typography.label, fontSize: 11, color: colors.safety }}>VELOCIDADE ESTEIRAS</Text>
               <Text style={{ ...typography.body, fontSize: 13, color: colors.safety, fontWeight: 'bold' }}>
                 Esq: {motores.esq}% | Dir: {motores.dir}%
               </Text>
             </View>
           </View>
-
         </View>
       </View>
     </SafeAreaView>
@@ -222,10 +207,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: spacing.lg,
   },
-  webview: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
+  webview: { flex: 1, backgroundColor: '#000000' },
   cameraLoading: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#000000',

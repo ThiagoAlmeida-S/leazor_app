@@ -15,9 +15,6 @@ import StatusDispositivo from '../../src/components/StatusDispositivo';
 import { colors, typography, spacing } from '../../src/theme/theme';
 import { ENDPOINTS } from '../../src/services/api';
 
-const RASPBERRY_IP = '100.94.182.54'; //127.0.1.1, 172.20.10.4, 192.168.15.18, 100.94.182.54
-const HISTORICO_URL = `http://${RASPBERRY_IP}:5000/historico`;
-
 export default function TabHistorico() {
   const [historico, setHistorico] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -29,9 +26,11 @@ export default function TabHistorico() {
       if (resposta.ok) {
         const dados = await resposta.json();
         setHistorico(dados);
+      } else {
+        console.log('Erro ao buscar histórico do Spring Boot:', resposta.status);
       }
     } catch (error) {
-      console.log('Aguardando backend Spring Boot para carregar histórico...');
+      console.log('Aguardando conexão com o servidor Spring Boot...');
     } finally {
       setCarregando(false);
       setRefreshing(false);
@@ -40,6 +39,9 @@ export default function TabHistorico() {
 
   useEffect(() => {
     carregarHistorico();
+    // Atualiza a cada 3 segundos para mostrar novos eventos da IA em tempo real
+    const intervalo = setInterval(carregarHistorico, 3000);
+    return () => clearInterval(intervalo);
   }, []);
 
   const onRefresh = () => {
@@ -63,7 +65,20 @@ export default function TabHistorico() {
     const data = new Date(dataIso);
     return isNaN(data.getTime())
       ? dataIso
-      : data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      : data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+
+  const obterIconeECor = (tipoEvento) => {
+    switch (tipoEvento) {
+      case 'OBSTACULO_DETECTADO':
+        return { icone: 'warning-outline', cor: colors.danger };
+      case 'GRAMA_ALTA':
+        return { icone: 'leaf-outline', cor: colors.grass };
+      case 'EMERGENCIA':
+        return { icone: 'alert-circle-outline', cor: colors.danger };
+      default:
+        return { icone: 'information-circle-outline', cor: colors.textSecondary };
+    }
   };
 
   return (
@@ -73,10 +88,10 @@ export default function TabHistorico() {
         <StatusDispositivo status="PARADO" />
 
         <View style={styles.headerAcoes}>
-          <Text style={typography.label}>{historico.length} registros</Text>
+          <Text style={typography.label}>{historico.length} eventos registrados</Text>
           {historico.length > 0 && (
             <TouchableOpacity onPress={limparTudo}>
-              <Text style={styles.btnLimparTudo}>Limpar Tudo</Text>
+              <Text style={styles.btnLimparTudo}>Limpar Exibição</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -95,25 +110,21 @@ export default function TabHistorico() {
             {historico.length === 0 ? (
               <View style={styles.vazioContainer}>
                 <Ionicons name="archive-outline" size={48} color={colors.textDisabled} />
-                <Text style={styles.vazioText}>Nenhum registro no histórico</Text>
+                <Text style={styles.vazioText}>Nenhum evento gravado no banco de dados</Text>
               </View>
             ) : (
               historico.map((item, index) => {
-                const isAlerta = item.tipo === 'ALERTA' || item.tipoAlert === 'CRITICO';
-                const titulo = item.titulo || item.descricao || item.mensagem || 'Evento de operação';
-                const detalhe = item.detalhe || (item.sensor ? `Sensor: ${item.sensor.nome}` : 'Registro do sistema');
-                const hora = item.data ? item.data : formatarHora(item.dataHora);
+                const tipo = item.tipoEvento || 'INFO';
+                const titulo = item.tipoEvento ? item.tipoEvento.replace('_', ' ') : 'Evento de Operação';
+                const detalhe = item.descricao || 'Registro do sistema';
+                const hora = formatarHora(item.dataHora);
+                const { icone, cor } = obterIconeECor(tipo);
 
                 return (
                   <View key={item.id ? item.id.toString() : index.toString()} style={styles.card}>
-                    <Ionicons
-                      name={isAlerta ? 'warning-outline' : 'checkmark-circle-outline'}
-                      size={24}
-                      color={isAlerta ? colors.danger : colors.grass}
-                      style={styles.icon}
-                    />
+                    <Ionicons name={icone} size={24} color={cor} style={styles.icon} />
                     <View style={styles.info}>
-                      <Text style={styles.cardTitulo}>{titulo}</Text>
+                      <Text style={[styles.cardTitulo, { color: cor }]}>{titulo}</Text>
                       <Text style={styles.cardDetalhe}>{detalhe}</Text>
                     </View>
                     <Text style={styles.cardData}>{hora}</Text>
@@ -158,9 +169,9 @@ const styles = StyleSheet.create({
   },
   icon: { marginRight: spacing.sm },
   info: { flex: 1 },
-  cardTitulo: { ...typography.body, fontSize: 14, fontWeight: '600' },
-  cardDetalhe: { ...typography.label, fontSize: 12 },
-  cardData: { ...typography.label, fontSize: 11, marginRight: spacing.sm },
+  cardTitulo: { ...typography.body, fontSize: 13, fontWeight: '700', textTransform: 'uppercase' },
+  cardDetalhe: { ...typography.label, fontSize: 12, color: colors.textPrimary, marginTop: 2 },
+  cardData: { ...typography.label, fontSize: 11, marginRight: spacing.sm, color: colors.textSecondary },
   btnDeletar: { padding: 4 },
   vazioContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 60 },
   vazioText: { ...typography.label, marginTop: spacing.sm },

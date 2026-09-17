@@ -5,9 +5,8 @@ import StatusDispositivo from '../components/StatusDispositivo';
 import SensorCard from '../components/SensorCard';
 import { colors, typography, spacing } from '../theme/theme';
 import { useAuth } from '../context/AuthContext';
+import { RASPBERRY_IP } from '../services/api';
 
-// Endereço do Raspberry Pi para leitura de sensores
-const RASPBERRY_IP = '100.94.182.54'; //127.0.1.1, 172.20.10.4, 192.168.15.18, 100.94.182.54
 const TELEMETRIA_URL = `http://${RASPBERRY_IP}:5000/telemetria`;
 
 export default function DashboardScreen() {
@@ -50,7 +49,6 @@ export default function DashboardScreen() {
     logout();
   };
 
-  // Formatação segura para exibir apenas o valor bruto captado pelo sensor
   const formatarValor = (valor) => {
     if (valor === null || valor === undefined) return '—';
     return typeof valor === 'number' ? valor.toString() : valor;
@@ -59,7 +57,6 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* CABEÇALHO */}
         <View style={styles.headerContainer}>
           <View>
             <Text style={typography.title}>Leazor</Text>
@@ -88,15 +85,32 @@ export default function DashboardScreen() {
           </Text>
         </View>
 
+        {/* DETECÇÕES DO MODELO YOLO / VISÃO COMPUTACIONAL */}
+        <Text style={styles.sectionLabel}>Visão Computacional (YOLO11N)</Text>
+        <View style={styles.grid}>
+          <SensorCard 
+            icon="scan-outline" 
+            label="Detecção"
+            value={formatarValor(dadosSensores?.iaStatus?.classeDetectada || 'Procurando...')} 
+            unit=""
+          />
+          <SensorCard 
+            icon="warning-outline" 
+            label="Obstáculos" 
+            value={formatarValor(dadosSensores?.iaStatus?.qtdObstaculos || 0)} 
+            unit="un" 
+          />
+        </View>
+
         {/* TELEMETRIA DOS SENSORES */}
         <Text style={styles.sectionLabel}>Telemetria e Orientação</Text>
         <View style={styles.grid}>
-        < SensorCard 
-          icon="pulse-outline" 
-          label="Distância"
-          value={formatarValor(dadosSensores?.ultrassom?.distancia_cm)} 
-          unit="cm"
-        />
+          <SensorCard 
+            icon="pulse-outline" 
+            label="Distância"
+            value={formatarValor(dadosSensores?.ultrassom?.distancia_cm)} 
+            unit="cm"
+          />
           <SensorCard 
             icon="compass-outline" 
             label="Inclinação" 
@@ -104,10 +118,10 @@ export default function DashboardScreen() {
             unit="°" 
           />
           <SensorCard
-           icon="thermometer-outline" 
-           label="Temperatura_cpu"
-           value={formatarValor(dadosSensores?.temperatura_cpu)}
-           unit="°C" 
+            icon="thermometer-outline" 
+            label="Temperatura CPU"
+            value={formatarValor(dadosSensores?.temperatura_cpu)}
+            unit="°C" 
           /> 
           <SensorCard
             icon="water-outline"
@@ -192,7 +206,6 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
