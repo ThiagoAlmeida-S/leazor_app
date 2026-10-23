@@ -283,7 +283,7 @@ export function MapaRobo() {
  
       <View style={styles.painel}>
         <Text style={styles.titulo}>
-          🌱 LEAZOR - Localização
+          LEAZOR - Localização
         </Text>
  
         {gps ? (

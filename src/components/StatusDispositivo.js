@@ -1,15 +1,21 @@
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme/theme';
 
 const STATUS_CONFIG = {
   PARADO: { label: 'Parado', color: colors.textSecondary },
   EM_MOVIMENTO: { label: 'Em movimento', color: colors.safety },
-  EXECUTANDO_FUNCAO: { label: 'Cortando grama', color: colors.grass },
+  EXECUTANDO_FUNCAO: { label: 'Cortando relva', color: colors.grass },
   ALERTA: { label: 'Alerta', color: colors.danger },
   DESCONECTADO: { label: 'Sem Sinal (RPi)', color: '#FF9800' },
+  
+  // Novos estados para integração com a IA (YOLO)
+  IA_AUTONOMA: { label: 'IA Autónoma Ativa', color: colors.info || '#007AFF' },
+  OBSTACULO_DETECTADO: { label: 'Obstáculo Detetado', color: colors.danger },
+  PROCESSANDO_IA: { label: 'A analisar visão', color: colors.grass },
 };
 
-export default function StatusDispositivo({ status = 'PARADO' }) {
+export default function StatusDispositivo({ status = 'PARADO', detalhesIA = null }) {
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.PARADO;
 
   return (
@@ -19,6 +25,13 @@ export default function StatusDispositivo({ status = 'PARADO' }) {
         <View style={[styles.dot, { backgroundColor: config.color }]} />
         <Text style={[styles.label, { color: config.color }]}>{config.label}</Text>
       </View>
+      
+      {/* Exibe detalhes da classe detetada pela IA, caso existam */}
+      {detalhesIA && detalhesIA.classe ? (
+        <Text style={styles.iaDetails}>
+          Detetado: {detalhesIA.classe} {detalhesIA.quantidade ? `(${detalhesIA.quantidade})` : ''}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -29,4 +42,11 @@ const styles = StyleSheet.create({
   textRow: { flexDirection: 'row', alignItems: 'center' },
   dot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
   label: { fontSize: 13, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
+  iaDetails: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+    marginLeft: 16,
+    fontStyle: 'italic',
+  },
 });

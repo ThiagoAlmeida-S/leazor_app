@@ -39,7 +39,7 @@ export default function TabHistorico() {
 
   useEffect(() => {
     carregarHistorico();
-    // Atualiza a cada 3 segundos para mostrar novos eventos da IA em tempo real
+    // Atualiza a cada 3 segundos para mostrar novos eventos da IA e emergência em tempo real
     const intervalo = setInterval(carregarHistorico, 3000);
     return () => clearInterval(intervalo);
   }, []);
@@ -49,14 +49,39 @@ export default function TabHistorico() {
     carregarHistorico();
   };
 
-  const removerItem = (id) => {
-    setHistorico((prev) => prev.filter((item) => item.id !== id));
+  const removerItem = async (id) => {
+    try {
+      // Remove localmente imediatamente para resposta rápida da UI
+      setHistorico((prev) => prev.filter((item) => item.id !== id));
+
+      // Envia a requisição DELETE ao backend Java
+      if (id) {
+        await fetch(`${ENDPOINTS.HISTORICO}/${id}`, {
+          method: 'DELETE',
+        });
+      }
+    } catch (error) {
+      console.log('Erro ao deletar item do histórico no servidor:', error);
+    }
   };
 
   const limparTudo = () => {
-    Alert.alert('Limpar Histórico', 'Deseja apagar os registros da tela?', [
+    Alert.alert('Limpar Histórico', 'Deseja apagar todos os registros do banco de dados?', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Limpar', style: 'destructive', onPress: () => setHistorico([]) },
+      {
+        text: 'Limpar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setHistorico([]);
+            await fetch(ENDPOINTS.HISTORICO, {
+              method: 'DELETE',
+            });
+          } catch (error) {
+            console.log('Erro ao limpar histórico no servidor:', error);
+          }
+        },
+      },
     ]);
   };
 
@@ -75,6 +100,7 @@ export default function TabHistorico() {
       case 'GRAMA_ALTA':
         return { icone: 'leaf-outline', cor: colors.grass };
       case 'EMERGENCIA':
+      case 'EMERGENCIA_ACIONADA':
         return { icone: 'alert-circle-outline', cor: colors.danger };
       default:
         return { icone: 'information-circle-outline', cor: colors.textSecondary };
@@ -91,7 +117,7 @@ export default function TabHistorico() {
           <Text style={typography.label}>{historico.length} eventos registrados</Text>
           {historico.length > 0 && (
             <TouchableOpacity onPress={limparTudo}>
-              <Text style={styles.btnLimparTudo}>Limpar Exibição</Text>
+              <Text style={styles.btnLimparTudo}>Limpar Histórico</Text>
             </TouchableOpacity>
           )}
         </View>

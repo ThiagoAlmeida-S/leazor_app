@@ -74,15 +74,11 @@ export default function DashboardScreen() {
 
         <StatusDispositivo status={conectado ? 'EXECUTANDO_FUNCAO' : 'PARADO'} />
 
-        {/* BATERIA */}
+        {/* BATERIA - VALOR FIXO EM 79% */}
         <Text style={styles.sectionLabel}>Bateria</Text>
         <View style={styles.batteryCard}>
-          <Text style={typography.value}>
-            {dadosSensores?.bateria != null ? `${dadosSensores.bateria}%` : '—'}
-          </Text>
-          <Text style={typography.label}>
-            {conectado ? 'Leitura em tempo real' : 'Aguardando conexão com Raspberry Pi'}
-          </Text>
+          <Text style={typography.value}>79%</Text>
+          <Text style={typography.label}>Nível da bateria do sistema</Text>
         </View>
 
         {/* DETECÇÕES DO MODELO YOLO / VISÃO COMPUTACIONAL */}
@@ -111,23 +107,11 @@ export default function DashboardScreen() {
             value={formatarValor(dadosSensores?.ultrassom?.distancia_cm)} 
             unit="cm"
           />
-          <SensorCard 
-            icon="compass-outline" 
-            label="Inclinação" 
-            value={formatarValor(dadosSensores?.inclinacao)} 
-            unit="°" 
-          />
           <SensorCard
             icon="thermometer-outline" 
             label="Temperatura CPU"
             value={formatarValor(dadosSensores?.temperatura_cpu)}
             unit="°C" 
-          /> 
-          <SensorCard
-            icon="water-outline"
-            label="Umidade"
-            value={formatarValor(dadosSensores?.umidade)}
-            unit="%"
           />
         </View>
 
